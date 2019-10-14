@@ -14,12 +14,13 @@
 #   Test Package:              'Ctrl + Shift + T'
 
 mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
-  derivName <- function(o, m) {paste0('d', o, m)} # derivName(1, 'nervous') -> d1nervous
+  derivName <- function(o, m) {paste0('d', m, '_', o)} # derivName(1, 'nervous') -> dnervous_1
   itemName <- function(o, m) {paste0(m, '_', o)} # itemName(1, 'nervous') -> nervous_1
+  factorName <- function(o, f) {paste0(f, '_', o)} # factorName(1, 'F') -> F_1
   occasions <- unique(data[[timevar]])
 
   data <- data[c(idvar, timevar, unlist(structure))]
-  data <- reshape(as.data.frame(data), timevar=timevar, idvar=idvar, direction='wide', sep='_')
+  data <- reshape(as.data.frame(data), timevar=timevar, idvar=idvar, direction='wide', sep='_')[-1]
 
   # factorStruct
   # input:
@@ -29,13 +30,13 @@ mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
   #   )
   # output:
   #   list (
-  #     F1 = c('d1nervous', 'd1down', 'd1anxious)
-  #     F2 = c('d2nervous', 'd2down', 'd2anxious)
-  #     F3 = c('d3nervous', 'd3down', 'd3anxious)
+  #     F1 = c('dnervous_1', 'ddown_1', 'danxious_1')
+  #     F2 = c('dnervous_2', 'ddown_2', 'danxious_2')
+  #     F3 = c('dnervous_3', 'ddown_3', 'danxious_3')
   #   )
   factorStruct <- unlist(lapply(occasions, function(o) {
     tmp <- lapply(structure, function(s) {derivName(o, s)}) # Create all derivs under factor
-    names(tmp) <- paste0(names(tmp), o) # Append occasion to factor name
+    names(tmp) <- factorName(o, names(tmp)) # Create factor names
     tmp
   }), recursive=F)
 
@@ -47,15 +48,15 @@ mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
   #   )
   # output:
   #   list (
-  #     d1nervious = c('nervous.1', 'nervous.2', 'nervous.3')
-  #     d2nervious = c('nervous.1', 'nervous.2', 'nervous.3')
-  #     d3nervious = c('nervous.1', 'nervous.2', 'nervous.3')
-  #     d1down = c('down.1', 'down.2', 'down.3')
-  #     d2down = c('down.1', 'down.2', 'down.3')
-  #     d3down = c('down.1', 'down.2', 'down.3')
-  #     d1anxious = c('anxious.1', 'anxious.2', 'anxious.3')
-  #     d2anxious = c('anxious.1', 'anxious.2', 'anxious.3')
-  #     d3anxious = c('anxious.1', 'anxious.2', 'anxious.3')
+  #     d1nervious = c('nervous_1', 'nervous_2', 'nervous_3')
+  #     d2nervious = c('nervous_1', 'nervous_2', 'nervous_3')
+  #     d3nervious = c('nervous_1', 'nervous_2', 'nervous_3')
+  #     d1down = c('down_1', 'down_2', 'down_3')
+  #     d2down = c('down_1', 'down_2', 'down_3')
+  #     d3down = c('down_1', 'down_2', 'down_3')
+  #     d1anxious = c('anxious_1', 'anxious_2', 'anxious_3')
+  #     d2anxious = c('anxious_1', 'anxious_2', 'anxious_3')
+  #     d3anxious = c('anxious_1', 'anxious_2', 'anxious_3')
   #   )
   derivStruct <- lapply(occasions, function(o) {
     measures_flat <- unlist(structure, use.names=F)
@@ -70,21 +71,32 @@ mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
   derivatives <- unlist(factorStruct, use.names=F)
   manifests <- unique(unlist(derivStruct))
 
+  stopifnot(setequal(manifests, names(data)))
+
+  # TODO: Does the cols in the data have to be in the same order as the manifest list?
+  data <- data[manifests]
+
   if (fiml) {
-    mxd <- mxData(data[manifests], type="raw")
+    mxd <- mxData(data, type="raw")
   } else {
-    df_subset <- na.omit(data[manifests])
+    df_subset <- na.omit(data)
+    # TODO: choose between polychoric / cor / cov
     #df_cors <- polychoric(df_subset)$rho
     df_cors <- cor(df_subset)
     mxd <- mxData(df_cors, type="cov", numObs=nrow(df_subset))
   }
 
+  # TODO: CHECK THIS
+  # Make weight matrix with Deboeck’s functions
+  weight <- ContrastsGOLD(occasions, length(occasions) - 1)
+  weightList <- as.list(as.data.frame(t(weight)))
+
   # Make weight matrix without Deboeck’s functions
-  weight <- matrix(c(1/3, 1/3, 1/3,
-                     -1,   0, 1 ,
-                     1/2,  -1, 1/2),
-                   nrow=3, ncol=3)
-  weightList <- as.list(as.data.frame(t(solve(weight))))
+  #weight <- matrix(c(1/3, 1/3, 1/3,
+  #                   -1,   0, 1 ,
+  #                   1/2,  -1, 1/2),
+  #                 nrow=3, ncol=3)
+  #weightList <- as.list(as.data.frame(t(solve(weight))))
 
   do.call('mxModel', c(list(
     modelName, mxd, type="RAM",
@@ -109,4 +121,18 @@ mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
     # saturate model
     if (fiml) mxPath(from = 'one', to = manifests) else list()
   ))
+}
+
+# Code from Deboeck (2010)
+ContrastsGOLD <- function(T, max) {
+  Xi <- matrix(NA, length(T), length(T))
+  for(r in 0:(length(T)-1)) {
+    Xi[r+1,] <- (T^r)
+    if(r>0) {
+      for(p in 0:(r-1)) {
+        Xi[r+1,] <- Xi[r+1,] - (Xi[p+1,]*(sum(Xi[p+1,]*(T^r)))/(sum(Xi[p+1,]*(T^p))))
+      }
+    }
+  }
+  return(Xi[1:(max+1),])
 }
