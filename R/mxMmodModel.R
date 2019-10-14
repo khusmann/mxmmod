@@ -19,9 +19,6 @@ mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
   factorName <- function(o, f) {paste0(f, '_', o)} # factorName(1, 'F') -> F_1
   occasions <- unique(data[[timevar]])
 
-  data <- data[c(idvar, timevar, unlist(structure))]
-  data <- reshape(as.data.frame(data), timevar=timevar, idvar=idvar, direction='wide', sep='_')[-1]
-
   # factorStruct
   # input:
   #   (occasions = c(1, 2, 3))
@@ -71,8 +68,9 @@ mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
   derivatives <- unlist(factorStruct, use.names=F)
   manifests <- unique(unlist(derivStruct))
 
+  data <- data[c(idvar, timevar, unlist(structure))]
+  data <- reshape(as.data.frame(data), timevar=timevar, idvar=idvar, direction='wide', sep='_')[-1]
   stopifnot(setequal(manifests, names(data)))
-
   # TODO: Does the cols in the data have to be in the same order as the manifest list?
   data <- data[manifests]
 
