@@ -1,6 +1,6 @@
 ---
-title: "Vignette Title"
-author: "Vignette Author"
+title: "Getting Started with mxmmod"
+author: "Kyle Husmann"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -16,50 +16,106 @@ knitr::opts_chunk$set(
 )
 ```
 
-Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
+## Overview
 
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
+## Outline
 
-## Vignette Info
+## A. Introduction to the Measurement Model of Derivatives (MMOD)
 
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
+Describe mmod here, add formulas etc.
 
-## Styles
+## B. Prepare environment
 
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
+Before we begin, let's load the required libraries and the example data set.
 
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
-
-## Figures
-
-The figure sizes have been customised so that you can easily put two images side-by-side. 
-
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
+```{r, echo=F}
+library(tidyverse)
+library(OpenMx)
+library(mxmmod)
+data("nlsy97depression")
 ```
 
-You can enable figure captions by `fig_caption: yes` in YAML:
+Plot some example trajectories
 
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
+```{r}
+set.seed(1000)
+subset <- sample(unique(nlsy97depression$pid), 9)
 
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
-
-## More Examples
-
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
-
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
+nlsy97depression %>%
+  filter(pid %in% subset) %>%
+  gather(measure, val, -pid, -occasion) %>%
+  ggplot(aes(x=occasion, group=measure, color=measure, y=val)) +
+  geom_line(position=position_jitter(w=0.1, h=0.1)) +
+  facet_wrap(~pid)
 ```
 
-Also a quote using `>`:
+## C. Example 1: One factor model
 
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))
+```{r}
+structure <- list(
+  F1 = c('nervous', 'down', 'depressed', 'calm', 'happy')
+)
+mmod_model <- mxMmodModel(data=nlsy97depression,
+                          modelName='1 Factor MMOD',
+                          idvar='pid', timevar='occasion', structure=structure, fiml=F)
+mmod_fit <- mxRun(mmod_model)
+(mmod_summary <- summary(mmod_fit))
+```
+
+```{r}
+# Note: This can take a while to draw...
+semPlot::semPaths(mmod_fit, 'est')
+```
+
+
+## D. Example 2: Two factor model
+
+```{r}
+structure2 <- list(
+  F1 = c('down', 'depressed', 'happy'),
+  F2 = c('nervous', 'calm')
+)
+mmod_model2 <- mxMmodModel(data=nlsy97depression,
+                          modelName='2 Factor MMOD',
+                          idvar='pid', timevar='occasion', structure=structure2)
+mmod_fit2 <- mxRun(mmod_model2)
+(mmod_summary2 <- summary(mmod_fit2))
+```
+
+```{r}
+# Note: This can take a while to draw...
+semPlot::semPaths(mmod_fit2, 'est')
+```
+
+## E. Discussion
+
+```{r}
+fits <- list(mmod_summary, mmod_summary2)
+
+(compare_models <- tibble(
+    name=map_chr(fits, 'modelName'),
+    chisq=map_dbl(fits, 'Chi'),
+    dof=map_dbl(fits, 'ChiDoF'),
+    `-2ll`=map_dbl(fits, 'Minus2LogLikelihood'),
+    aic=map_dbl(fits, 'AIC.Mx'),
+    bic=map_dbl(fits, 'BIC.Mx'),
+    rmsea=map_dbl(fits, 'RMSEA'),
+    cfi=map_dbl(fits, 'CFI'),
+    tli=map_dbl(fits, 'TLI')  
+))
+```
+
+## F. Appendix: Using FIML
+
+```{r}
+structure3 <- list(
+  F1 = c('nervous', 'down', 'depressed', 'calm', 'happy')
+)
+mmod_model3 <- mxMmodModel(data=nlsy97depression,
+                          modelName='1 Factor MMOD w FIML',
+                          idvar='pid', timevar='occasion', structure=structure, fiml=T)
+mmod_fit3 <- mxRun(mmod_model3)
+mmod_refs3 <- mxRefModels(mmod_fit3, run=T)
+(mmod_summary3 <- summary(mmod_fit3, refModels=mmod_refs3))
+```
+
