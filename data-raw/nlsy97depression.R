@@ -32,5 +32,8 @@ nlsy97depression <- reshape(nlsy97depression,
                             idvar='pid', timevar='occasion',
                             varying=names(var_list[-1]),
                             direction='long', sep='')
+nlsy97depression['pid'] <- factor(nlsy97depression$pid)
+attr(nlsy97depression, "reshapeLong") <- NULL
+rownames(nlsy97depression) <- NULL
 
 usethis::use_data(nlsy97depression, overwrite=T)
