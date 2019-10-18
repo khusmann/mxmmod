@@ -24,9 +24,13 @@ This tutorial introduces the `mxmmod` package, for building Measurement Model of
 ## Outline
 
 A. Introduction to the Measurement Model of Derivatives (MMOD)
+
 B. Data set
+
 C. Example 1: One factor model
+
 D. Example 2: Two factor model
+
 E. Discussion
 
 ### Prelim: Prepare environment
@@ -47,11 +51,18 @@ library(mxmmod)
 
 ## A. Introduction to the Measurement Model of Derivatives (MMOD)
 
-Describe mmod here, add formulas etc.
+The Measurement Model of Derivatives  (MMOD; Estabrook, 2015) is a method for evaluating test item structures that includes the temporal dynamics of item responses.
+Unlike traditional confirmatory factor analysis which only evaluates factor structures cross-sectionally at a single time point, an MMOD operates longitudinally, taking into account how latent factors and their associated items change over time.
+The MMOD makes the assumption that items from the same construct will exhibit similar temporal dynamcs (as defined by their deratives).
+In doing so, the MMOD can uniquely identify factor structures that would otherwise be indistinguishable cross-sectionally.
+By reducing the ambiguity in factor structure, the MMOD is a powerful tool to validate and sharpen theoretical distinctions among constructs in longitudinal data.
 
 ## B. Data set
 
-This tutorial follows the example of Estabrook (2015) and makes use of data from the National Longitudinal Survey of Youth. The NLSY 1997 sample ([NLSY97](https://www.bls.gov/nls/nlsy97.htm)) has a 5-item depression scale that was administered at three occasions. The five items are all on a 4-point Likert scale. Participants were asked how often they felt "like a nervous person", "calm and peaceful", "down or blue", "like a happy person", and "depressed" in the last month. These  example data are included in the `mxmmod` package:
+This tutorial follows the example in Estabrook (2015) and makes use of data from the National Longitudinal Survey of Youth.
+The NLSY 1997 sample ([NLSY97](https://www.bls.gov/nls/nlsy97.htm)) has a 5-item depression scale that was administered at three occasions.
+The five items are all on a 4-point Likert scale.
+Participants were asked how often they felt "like a nervous person", "calm and peaceful", "down or blue", "like a happy person", and "depressed" in the last month. These  example data are included in the `mxmmod` package:
 
 ```{r}
 data("nlsy97depression")
@@ -72,10 +83,9 @@ nlsy97depression %>%
   facet_wrap(~pid)
 ```
 
-```{r}
+```{r, fig.width=6, fig.height=4, fig.align='center'}
 nlsy97depression %>%
-  select(-pid) %>%
-  gather(measure, val, -occasion) %>%
+  gather(measure, val, -occasion, -pid) %>%
   group_by(occasion, measure) %>%
   na.omit() %>%
   ggplot(aes(x=occasion, color=measure, y=val)) +
