@@ -19,6 +19,8 @@ eval_semplots <- F
 
 ## Overview
 
+This tutorial introduces the `mxmmod` package, for building Measurement Model of Derivatives (MMOD; Estabrook, 2015) with OpenMx.
+
 ## Outline
 
 A. Introduction to the Measurement Model of Derivatives (MMOD)
@@ -49,12 +51,14 @@ Describe mmod here, add formulas etc.
 
 ## B. Data set
 
+This tutorial will make use of data from the National Longitudinal Survey of Youth. The NLSY97  sample has a 5-item depression scale administered at 
+
 ```{r}
 data("nlsy97depression")
 summary(nlsy97depression)
 ```
 
-Plot some example trajectories
+Plot a few example trajectories:
 
 ```{r, fig.width=6, fig.height=6, fig.align='center'}
 set.seed(1000)
@@ -66,6 +70,20 @@ nlsy97depression %>%
   ggplot(aes(x=occasion, group=measure, color=measure, y=val)) +
   geom_line(position=position_jitter(w=0.1, h=0.1)) +
   facet_wrap(~pid)
+```
+
+Plot mean trajectories:
+
+```{r}
+nlsy97depression %>%
+  select(-pid) %>%
+  gather(measure, val, -occasion) %>%
+  group_by(occasion, measure) %>%
+  na.omit() %>%
+  ggplot(aes(x=occasion, color=measure, y=val)) +
+  stat_summary(fun.y = mean, geom='line') +
+  stat_summary(fun.y = mean, geom='point') +
+  stat_summary(fun.data = mean_se, geom='errorbar', width=0.2)
 ```
 
 ## C. Example 1: One factor model
@@ -91,8 +109,8 @@ semPlot::semPaths(mmod_fit, 'est')
 
 ```{r}
 structure2 <- list(
-  F1 = c('down', 'depressed', 'happy'),
-  F2 = c('nervous', 'calm')
+  F1 = c('nervous', 'down', 'depressed'),
+  F2 = c('happy', 'calm')
 )
 mmod_model2 <- mxMmodModel(data=nlsy97depression,
                           modelName='2 Factor MMOD',
