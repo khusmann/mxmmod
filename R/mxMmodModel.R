@@ -92,8 +92,9 @@ mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
 
   data <- data[c(idvar, timevar, unlist(structure))]
   data <- reshape(as.data.frame(data), timevar=timevar, idvar=idvar, direction='wide', sep='_')[-1]
-  stopifnot(setequal(manifests, names(data)))
-  # TODO: Does the cols in the data have to be in the same order as the manifest list?
+  stopifnot(setequal(manifests, names(data))) # Sanity check
+
+  # OpenMx manifest ordering bug: https://github.com/OpenMx/OpenMx/issues/247
   data <- data[manifests]
 
   if (fiml) {
