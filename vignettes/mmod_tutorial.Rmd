@@ -4,7 +4,7 @@ author: "Kyle Husmann"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Getting Started with mxmmod}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,30 +14,49 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+eval_semplots <- F
 ```
 
 ## Overview
 
 ## Outline
 
+A. Introduction to the Measurement Model of Derivatives (MMOD)
+B. Data set
+C. Example 1: One factor model
+D. Example 2: Two factor model
+E. Discussion
+
+### Prelim: Prepare environment
+
+Before we begin, install the `mxmmod` package if you have not already:
+
+```{r, eval=F}
+devtools::install_github('khusmann/mxmmod')
+```
+
+Now let's load the required libraries for this tutorial:
+
+```{r, message=F, warning=F}
+library(tidyverse)
+library(OpenMx)
+library(mxmmod)
+```
+
 ## A. Introduction to the Measurement Model of Derivatives (MMOD)
 
 Describe mmod here, add formulas etc.
 
-## B. Prepare environment
+## B. Data set
 
-Before we begin, let's load the required libraries and the example data set.
-
-```{r, echo=F}
-library(tidyverse)
-library(OpenMx)
-library(mxmmod)
+```{r}
 data("nlsy97depression")
+summary(nlsy97depression)
 ```
 
 Plot some example trajectories
 
-```{r}
+```{r, fig.width=6, fig.height=6, fig.align='center'}
 set.seed(1000)
 subset <- sample(unique(nlsy97depression$pid), 9)
 
@@ -62,7 +81,7 @@ mmod_fit <- mxRun(mmod_model)
 (mmod_summary <- summary(mmod_fit))
 ```
 
-```{r}
+```{r, eval=eval_semplots, fig.width=6, fig.height=4, fig.align='center'}
 # Note: This can take a while to draw...
 semPlot::semPaths(mmod_fit, 'est')
 ```
@@ -82,7 +101,7 @@ mmod_fit2 <- mxRun(mmod_model2)
 (mmod_summary2 <- summary(mmod_fit2))
 ```
 
-```{r}
+```{r, eval=eval_semplots, fig.width=6, fig.height=4, fig.align='center'}
 # Note: This can take a while to draw...
 semPlot::semPaths(mmod_fit2, 'est')
 ```
@@ -104,18 +123,3 @@ fits <- list(mmod_summary, mmod_summary2)
     tli=map_dbl(fits, 'TLI')  
 ))
 ```
-
-## F. Appendix: Using FIML
-
-```{r}
-structure3 <- list(
-  F1 = c('nervous', 'down', 'depressed', 'calm', 'happy')
-)
-mmod_model3 <- mxMmodModel(data=nlsy97depression,
-                          modelName='1 Factor MMOD w FIML',
-                          idvar='pid', timevar='occasion', structure=structure, fiml=T)
-mmod_fit3 <- mxRun(mmod_model3)
-mmod_refs3 <- mxRefModels(mmod_fit3, run=T)
-(mmod_summary3 <- summary(mmod_fit3, refModels=mmod_refs3))
-```
-
