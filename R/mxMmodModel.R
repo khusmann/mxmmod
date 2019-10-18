@@ -77,11 +77,12 @@ mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
   if (fiml) {
     mxd <- mxData(data, type="raw")
   } else {
+    if (any(is.na(data))) {
+      warning('Missing values detected; omitting them.')
+    }
     df_subset <- na.omit(data)
-    # TODO: choose between polychoric / cor / cov
-    #df_cors <- polychoric(df_subset)$rho
-    df_cors <- cor(df_subset)
-    mxd <- mxData(df_cors, type="cov", numObs=nrow(df_subset))
+    df_cov <- cov(df_subset)
+    mxd <- mxData(df_cov, type="cov", numObs=nrow(df_subset))
   }
 
   # TODO: CHECK THIS
