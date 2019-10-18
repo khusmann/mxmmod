@@ -86,7 +86,6 @@ nlsy97depression %>%
 ```{r, fig.width=6, fig.height=4, fig.align='center'}
 nlsy97depression %>%
   gather(measure, val, -occasion, -pid) %>%
-  group_by(occasion, measure) %>%
   na.omit() %>%
   ggplot(aes(x=occasion, color=measure, y=val)) +
   stat_summary(fun.y = mean, geom='line') +
