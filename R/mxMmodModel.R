@@ -1,17 +1,39 @@
-# Hello, world!
-#
-# This is an example function named 'hello'
-# which prints 'Hello, world!'.
-#
-# You can learn more about package authoring with RStudio at:
-#
-#   http://r-pkgs.had.co.nz/
-#
-# Some useful keyboard shortcuts for package authoring:
-#
-#   Build and Reload Package:  'Ctrl + Shift + B'
-#   Check Package:             'Ctrl + Shift + E'
-#   Test Package:              'Ctrl + Shift + T'
+#' Create an MMOD
+#'
+#' This function builds a Measurement Model of Derivatives (MMOD; Estabrook 2015) with a given
+#' factor structure.
+#'
+#' @param data a data frame with measurements in long format
+#' @param modelName name for the resulting model
+#' @param idvar name of column for subject IDs
+#' @param timevar name of column for measurement occasion
+#' @param structure factor structure, see 'Details'
+#' @param fiml if true, use raw data to fit model with FIML. Otherwise, fit using cov matrix
+#'             (dropping missing values if necessary).
+#' @return an MMOD as an mxModel object
+#'
+#' @details
+#'
+#' The \code{structure} argument is a list of latent factors and their mappings to manifest
+#' variables. For example, a one factor structure would be:
+#'
+#' \code{list(F1 = c('m1', 'm2', 'm3', 'm4', 'm5', 'm6'))}
+#'
+#' And a two factor structure would be:
+#'
+#' \code{list(F1 = c('m1', 'm2', 'm3'), F2 = c('m4', 'm5', 'm6'))}
+#'
+#' @examples
+#' data("nlsy97depression")
+#' # Fit one factor MMOD
+#' structure <- list(
+#'   F1 = c('nervous', 'down', 'depressed', 'calm', 'happy')
+#' )
+#' mmod_model <- mxMmodModel(data=nlsy97depression,
+#'                           modelName='1 Factor MMOD',
+#'                           idvar='pid', timevar='occasion', structure=structure)
+#' mmod_fit <- mxRun(mmod_model)
+#' summary(mmod_fit)
 
 mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
   derivName <- function(o, m) {paste0('d', m, '_', o)} # derivName(1, 'nervous') -> dnervous_1
