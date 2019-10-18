@@ -1,12 +1,18 @@
 Package: mxmmod
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Measurement Model of Derivatives (MMOD) in OpenMx
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Authors@R: c(
+    person(
+      given = 'Kyle',
+      family = 'Husmann',
+      role = c('aut', 'cre'),
+      email = 'kdh38@psu.edu'
+    )
+  )
+Description: This package provides a convenient interface for building
+    Measurement Model of Derivatives (MMOD; Estabrook, 2015) in OpenMx
+License: Apache 2.0
 Encoding: UTF-8
 LazyData: true
 Imports:
