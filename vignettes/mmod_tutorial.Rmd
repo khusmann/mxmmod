@@ -51,14 +51,14 @@ Describe mmod here, add formulas etc.
 
 ## B. Data set
 
-This tutorial will make use of data from the National Longitudinal Survey of Youth. The NLSY97  sample has a 5-item depression scale administered at 
+This tutorial follows the example of Estabrook (2015) and makes use of data from the National Longitudinal Survey of Youth. The NLSY 1997 sample ([NLSY97](https://www.bls.gov/nls/nlsy97.htm)) has a 5-item depression scale that was administered at three occasions. The five items are all on a 4-point Likert scale. Participants were asked how often they felt "like a nervous person", "calm and peaceful", "down or blue", "like a happy person", and "depressed" in the last month. These  example data are included in the `mxmmod` package:
 
 ```{r}
 data("nlsy97depression")
 summary(nlsy97depression)
 ```
 
-Plot a few example trajectories:
+Before building any models, we first plot a few example trajectories and mean trajectories for the five items assessed:
 
 ```{r, fig.width=6, fig.height=6, fig.align='center'}
 set.seed(1000)
@@ -71,8 +71,6 @@ nlsy97depression %>%
   geom_line(position=position_jitter(w=0.1, h=0.1)) +
   facet_wrap(~pid)
 ```
-
-Plot mean trajectories:
 
 ```{r}
 nlsy97depression %>%
@@ -88,6 +86,8 @@ nlsy97depression %>%
 
 ## C. Example 1: One factor model
 
+We'll start by building a 1-factor MMOD, with all items loading onto a single latent factor.
+
 ```{r}
 structure <- list(
   F1 = c('nervous', 'down', 'depressed', 'calm', 'happy')
@@ -99,6 +99,8 @@ mmod_fit <- mxRun(mmod_model)
 (mmod_summary <- summary(mmod_fit))
 ```
 
+The path diagram of this MMOD can be rendered by `semPlot::semPaths`
+
 ```{r, eval=eval_semplots, fig.width=6, fig.height=4, fig.align='center'}
 # Note: This can take a while to draw...
 semPlot::semPaths(mmod_fit, 'est')
@@ -106,6 +108,8 @@ semPlot::semPaths(mmod_fit, 'est')
 
 
 ## D. Example 2: Two factor model
+
+Next, let's build a two-factor MMOD with one latent factor for negative items (nervous, down, depressed), and the other for positive items (happy, calm):
 
 ```{r}
 structure2 <- list(
@@ -119,12 +123,16 @@ mmod_fit2 <- mxRun(mmod_model2)
 (mmod_summary2 <- summary(mmod_fit2))
 ```
 
+The path diagram of this MMOD can be rendered by `semPlot::semPaths`
+
 ```{r, eval=eval_semplots, fig.width=6, fig.height=4, fig.align='center'}
 # Note: This can take a while to draw...
 semPlot::semPaths(mmod_fit2, 'est')
 ```
 
 ## E. Discussion
+
+Finally, let's create a summary table of the fits from the two models so we can compare:
 
 ```{r}
 fits <- list(mmod_summary, mmod_summary2)
@@ -141,3 +149,5 @@ fits <- list(mmod_summary, mmod_summary2)
     tli=map_dbl(fits, 'TLI')  
 ))
 ```
+
+The two-factor model is superior, across every fit metric.
