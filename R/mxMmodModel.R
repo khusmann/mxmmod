@@ -39,7 +39,13 @@ mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
   derivName <- function(o, m) {paste0('d', m, '_', o)} # derivName(1, 'nervous') -> dnervous_1
   itemName <- function(o, m) {paste0(m, '_', o)} # itemName(1, 'nervous') -> nervous_1
   factorName <- function(o, f) {paste0(f, '_', o)} # factorName(1, 'F') -> F_1
-  occasions <- unique(data[[timevar]])
+
+  # TODO: test me for various unexpect inputs, like:
+  # try data[[timevar]] = factor(), data[[timevar]] = c(5,-1,2), data[[timevar]] = c(0.5, .8, 10)
+  # Convert data[[timevar]] to 1,2,3,etc.
+  occasions_num <- sort(unique(data[[timevar]]))
+  data[[timevar]] <- as.numeric(factor(data[[timevar]]))
+  occasions <- 1:length(occasions_num)
 
   # factorStruct
   # input:
@@ -110,7 +116,7 @@ mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
 
   # TODO: CHECK THIS
   # Make weight matrix with Deboeck’s functions
-  weight <- ContrastsGOLD(occasions, length(occasions) - 1)
+  weight <- ContrastsGOLD(occasions_num, length(occasions_num) - 1)
   weightList <- as.list(as.data.frame(t(weight)))
 
   # Make weight matrix without Deboeck’s functions
