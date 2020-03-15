@@ -8,6 +8,11 @@ Authors@R: c(
       family = 'Husmann',
       role = c('aut', 'cre'),
       email = 'kdh38@psu.edu'
+    ),
+    person(given = 'Timothy R.',
+           family = 'Brick',
+           role = c('aut'),
+           email = 'tbrick@psu.edu'
     )
   )
 Description: This package provides a convenient interface for building
