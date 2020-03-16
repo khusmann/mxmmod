@@ -1,6 +1,7 @@
 context('Reference implementation comparison')
 
 mxmmod_ref <- function(df, do_fiml=F) {
+  require(OpenMx)
   require(mxmmod)
   structure <- list(
     F1 = c('nervous', 'down', 'depressed', 'calm', 'happy')

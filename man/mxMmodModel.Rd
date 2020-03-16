@@ -38,7 +38,7 @@ And a two factor structure would be:
 \code{list(F1 = c('m1', 'm2', 'm3'), F2 = c('m4', 'm5', 'm6'))}
 }
 \examples{
-data("nlsy97depression")
+data(nlsy97depression)
 # Fit one factor MMOD
 structure <- list(
   F1 = c('nervous', 'down', 'depressed', 'calm', 'happy')
@@ -46,6 +46,6 @@ structure <- list(
 mmod_model <- mxMmodModel(data=nlsy97depression,
                           modelName='1 Factor MMOD',
                           idvar='pid', timevar='occasion', structure=structure)
-mmod_fit <- mxRun(mmod_model)
+mmod_fit <- OpenMx::mxRun(mmod_model)
 summary(mmod_fit)
 }

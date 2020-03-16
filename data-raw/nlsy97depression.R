@@ -1,4 +1,7 @@
+# Create nlsy97 depression data set
+#
 # Public domain data from nlsy97: https://www.bls.gov/nls/nlsy97.htm
+#
 
 var_list <- list(
   pid = 'R0000100',

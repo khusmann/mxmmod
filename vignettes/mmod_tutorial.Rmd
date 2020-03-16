@@ -7,6 +7,7 @@ vignette: >
   %\VignetteIndexEntry{Getting Started with mxmmod}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{tidyverse}
 ---
 
 ```{r setup, include = FALSE}
@@ -35,13 +36,7 @@ E. Discussion
 
 ### Prelim: Prepare environment
 
-Before we begin, install the `mxmmod` package if you have not already:
-
-```{r, eval=F}
-devtools::install_github('khusmann/mxmmod')
-```
-
-Now let's load the required libraries for this tutorial:
+First, let's load the required libraries for this tutorial:
 
 ```{r, message=F, warning=F}
 library(tidyverse)

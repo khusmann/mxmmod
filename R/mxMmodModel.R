@@ -24,7 +24,7 @@
 #' \code{list(F1 = c('m1', 'm2', 'm3'), F2 = c('m4', 'm5', 'm6'))}
 #'
 #' @examples
-#' data("nlsy97depression")
+#' data(nlsy97depression)
 #' # Fit one factor MMOD
 #' structure <- list(
 #'   F1 = c('nervous', 'down', 'depressed', 'calm', 'happy')
@@ -32,8 +32,9 @@
 #' mmod_model <- mxMmodModel(data=nlsy97depression,
 #'                           modelName='1 Factor MMOD',
 #'                           idvar='pid', timevar='occasion', structure=structure)
-#' mmod_fit <- mxRun(mmod_model)
+#' mmod_fit <- OpenMx::mxRun(mmod_model)
 #' summary(mmod_fit)
+#' @export
 
 mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
   derivName <- function(o, m) {paste0('d', m, '_', o)} # derivName(1, 'nervous') -> dnervous_1
@@ -107,53 +108,60 @@ mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
   manifests <- unique(unlist(derivStruct))
 
   data <- data[c(idvar, timevar, unlist(structure))]
-  data <- reshape(as.data.frame(data), timevar=timevar, idvar=idvar, direction='wide', sep='_')[-1]
+  data <- stats::reshape(as.data.frame(data), timevar=timevar, idvar=idvar, direction='wide', sep='_')[-1]
   stopifnot(setequal(manifests, names(data))) # Sanity check
 
   # OpenMx manifest ordering bug: https://github.com/OpenMx/OpenMx/issues/247
   data <- data[manifests]
 
   if (fiml) {
-    mxd <- mxData(data, type="raw")
+    mxd <- OpenMx::mxData(data, type="raw")
   } else {
     if (any(is.na(data))) {
       warning('Missing values detected; omitting them.')
     }
-    df_subset <- na.omit(data)
-    df_cov <- cov(df_subset)
-    mxd <- mxData(df_cov, type="cov", numObs=nrow(df_subset))
+    df_subset <- stats::na.omit(data)
+    df_cov <- stats::cov(df_subset)
+    mxd <- OpenMx::mxData(df_cov, type="cov", numObs=nrow(df_subset))
   }
 
   # Make weight matrix with Deboeck’s functions
   weight <- ContrastsGOLD(occasions_num, length(occasions_num) - 1)
   weightList <- as.list(as.data.frame(t(weight)))
 
-  do.call('mxModel', c(list(
+  do.call(OpenMx::mxModel, c(list(
     modelName, mxd, type="RAM",
     manifestVars=manifests,
     latentVars=c(factors, derivatives),
     # factor loadings
     mapply(function(fct, drv) {
-      mxPath(from=fct, to=drv, values=0.5, free=T)
+      OpenMx::mxPath(from=fct, to=drv, values=0.5, free=T)
     }, names(factorStruct), factorStruct),
     # factor variances
-    mxPath(from=factors, arrows=2, values=1, free=F),
+    OpenMx::mxPath(from=factors, arrows=2, values=1, free=F),
     # factor correlations
-    mxPath(from=factors, arrows=2, connect="unique.bivariate", free=T),
+    OpenMx::mxPath(from=factors, arrows=2, connect="unique.bivariate", free=T),
     # residual variances(only for latent derivatives !)
-    mxPath(from=derivatives, arrows=2, values=1)),
+    OpenMx::mxPath(from=derivatives, arrows=2, values=1)),
     # transformation
     mapply(function(dgrp, weight) {
        mapply(function(drv, mnf) {
-        mxPath(from=drv, to=mnf, free=F, values=weight)
+        OpenMx::mxPath(from=drv, to=mnf, free=F, values=weight)
       }, names(dgrp), dgrp)
     }, derivStruct, weightList),
     # saturate model
-    if (fiml) mxPath(from = 'one', to = manifests) else list()
+    if (fiml) OpenMx::mxPath(from = 'one', to = manifests) else list()
   ))
 }
 
-# Code from Deboeck (2010)
+#' Generate GOLD contrasts
+#'
+#' Code from Deboeck (2010)
+#'
+#' @param T timeseries
+#' @param max max derivatives
+#'
+#' @keywords internal
 ContrastsGOLD <- function(T, max) {
   Xi <- matrix(NA, length(T), length(T))
   for(r in 0:(length(T)-1)) {
