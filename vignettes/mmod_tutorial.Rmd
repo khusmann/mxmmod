@@ -60,7 +60,7 @@ The five items are all on a 4-point Likert scale.
 Participants were asked how often they felt "like a nervous person", "calm and peaceful", "down or blue", "like a happy person", and "depressed" in the last month. These  example data are included in the `mxmmod` package:
 
 ```{r}
-data("nlsy97depression")
+data(nlsy97depression)
 summary(nlsy97depression)
 ```
 

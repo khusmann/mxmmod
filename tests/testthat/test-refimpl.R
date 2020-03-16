@@ -1,5 +1,10 @@
 context('Reference implementation comparison')
 
+nlsy97_1983_cohort <- function() {
+  data(nlsy97depression)
+  nlsy97depression[nlsy97depression$birth_y==1983,c('pid', 'occasion', 'nervous', 'calm', 'down', 'happy', 'depressed')]
+}
+
 mxmmod_ref <- function(df, do_fiml=F) {
   require(OpenMx)
   require(mxmmod)
@@ -47,7 +52,7 @@ estabrook_ref <- function(df) {
   longWeight <- as.vector(t(solve(weight)))
 
   mmod2 <- mxModel("One Factor MMOD 2",
-                    mxData(covData, type="cov", numObs=nrow(na.omit(rawData))),
+                    mxData(covData, type="cov", numObs=1397),
                     type="RAM",
                     manifestVars=colnames(covData),
                     latentVars=c("F0", "F1", "F2", latDeriv),
@@ -95,17 +100,18 @@ estabrook_ref <- function(df) {
 }
 
 test_that('Same results as Estabrook 2015', {
-  data(nlsy97depression)
-  a <- mxmmod_ref(nlsy97depression)
-  b <- estabrook_ref(nlsy97depression)
+  df <- nlsy97_1983_cohort()
+  a <- mxmmod_ref(df)
+  b <- estabrook_ref(df)
   expect_equal(a$parameters$Estimate, b$parameters$Estimate, tolerance = .001)
   expect_equal(a$parameters$Std.Error, b$parameters$Std.Error, tolerance = .001)
 })
 
 test_that('Floating point occasions', {
-  data(nlsy97depression)
+  df <- nlsy97_1983_cohort()
+
   scale_val <- 2
-  scaled_nlsy <- nlsy97depression
+  scaled_nlsy <- df
   scaled_nlsy$occasion <- scaled_nlsy$occasion / scale_val
 
   trans <- rep(1, 33)
@@ -115,7 +121,7 @@ test_that('Floating point occasions', {
   trans[29:33] <- scale_val^4
 
   a <- mxmmod_ref(scaled_nlsy)
-  b <- estabrook_ref(nlsy97depression)
+  b <- estabrook_ref(df)
 
   a$parameters$Estimate <- a$parameters$Estimate / trans
   a$parameters$Std.Error <- a$parameters$Std.Error / trans
@@ -125,28 +131,27 @@ test_that('Floating point occasions', {
 })
 
 test_that('FIML', {
-  data(nlsy97depression)
-  nlsy97depression <- na.omit(nlsy97depression)
-  a <- mxmmod_ref(nlsy97depression, do_fiml=T)
-  b <- estabrook_ref(nlsy97depression)
-  expect_equal(a$parameters$Estimate[1:33], b$parameters$Estimate, tolerance = .02)
-  expect_equal(a$parameters$Std.Error[1:33], b$parameters$Std.Error, tolerance = .001)
+  df <- na.omit(nlsy97_1983_cohort())
+  a <- mxmmod_ref(df, do_fiml=T)
+  b <- estabrook_ref(df)
+  expect_equal(a$parameters$Estimate[1:33], b$parameters$Estimate, tolerance = .05)
+  expect_equal(a$parameters$Std.Error[1:33], b$parameters$Std.Error, tolerance = .01)
 })
 
 test_that('Argument check timevar numeric', {
-  data(nlsy97depression)
-  nlsy97depression$occasion <- as.factor(nlsy97depression$occasion)
-  expect_error(mxmmod_ref(nlsy97depression), 'timevar must be a numeric type')
+  df <- nlsy97_1983_cohort()
+  df$occasion <- as.factor(df$occasion)
+  expect_error(mxmmod_ref(df), 'timevar must be a numeric type')
 })
 
 test_that('Argument check timevar', {
-  data(nlsy97depression)
-  nlsy97depression$occasion <- NULL
-  expect_error(mxmmod_ref(nlsy97depression), "Column 'occasion' not found")
+  df <- nlsy97_1983_cohort()
+  df$occasion <- NULL
+  expect_error(mxmmod_ref(df), "Column 'occasion' not found")
 })
 
 test_that('Argument check idvar', {
-  data(nlsy97depression)
-  nlsy97depression$pid <- NULL
-  expect_error(mxmmod_ref(nlsy97depression), "Column 'pid' not found")
+  df <- nlsy97_1983_cohort()
+  df$pid <- NULL
+  expect_error(mxmmod_ref(df), "Column 'pid' not found")
 })

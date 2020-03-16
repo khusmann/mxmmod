@@ -8,6 +8,9 @@
 #' @format A data frame with 26952 rows and 7 variables:
 #' \describe{
 #'   \item{pid}{Unique ID of participant}
+#'   \item{sex}{Sex of participant}
+#'   \item{birth_m}{Birth Month}
+#'   \item{birth_y}{Birth Year}
 #'   \item{occasion}{Measurement occasion}
 #'   \item{nervous}{How often participant felt 'like a nervous person'}
 #'   \item{calm}{How often participant felt 'calm and peaceful'}

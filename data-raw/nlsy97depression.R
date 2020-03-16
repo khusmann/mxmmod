@@ -5,9 +5,9 @@
 
 var_list <- list(
   pid = 'R0000100',
-  # sex = 'R0536300',
-  # birth_m = 'R0536401',
-  # birth_y = 'R0536402',
+  sex = 'R0536300',
+  birth_m = 'R0536401',
+  birth_y = 'R0536402',
   # sample_type = 'R1235800',
   # eth = 'R1482600',
   nervous0 = 'R4893600',
@@ -30,12 +30,19 @@ var_list <- list(
 nlsy97depression <- read.csv('data-raw/nlsy97_subset.csv')
 nlsy97depression <- nlsy97depression[unlist(var_list)]
 colnames(nlsy97depression) <- names(var_list)
+
+# Add NAs
 nlsy97depression[nlsy97depression < 0] = NA
+
+# Wide -> Long
 nlsy97depression <- reshape(nlsy97depression,
                             idvar='pid', timevar='occasion',
-                            varying=names(var_list[-1]),
+                            varying=5:19,
                             direction='long', sep='')
+
+# Fix df attributes
 nlsy97depression['pid'] <- factor(nlsy97depression$pid)
+nlsy97depression['sex'] <- factor(nlsy97depression$sex, labels=c('M', 'F'))
 attr(nlsy97depression, "reshapeLong") <- NULL
 rownames(nlsy97depression) <- NULL
 
