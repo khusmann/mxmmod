@@ -40,8 +40,18 @@ mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
   itemName <- function(o, m) {paste0(m, '_', o)} # itemName(1, 'nervous') -> nervous_1
   factorName <- function(o, f) {paste0(f, '_', o)} # factorName(1, 'F') -> F_1
 
-  # TODO: test me for various unexpect inputs, like:
-  # try data[[timevar]] = factor(), data[[timevar]] = c(5,-1,2), data[[timevar]] = c(0.5, .8, 10)
+  if (!idvar %in% colnames(data)) {
+    stop("Column '", idvar, "' not found")
+  }
+
+  if (!timevar %in% colnames(data)) {
+    stop("Column '", timevar, "' not found")
+  }
+
+  if (!is.numeric(data[[timevar]])) {
+    stop('timevar must be a numeric type')
+  }
+
   # Convert data[[timevar]] to 1,2,3,etc.
   occasions_num <- sort(unique(data[[timevar]]))
   data[[timevar]] <- as.numeric(factor(data[[timevar]]))
@@ -114,17 +124,9 @@ mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
     mxd <- mxData(df_cov, type="cov", numObs=nrow(df_subset))
   }
 
-  # TODO: CHECK THIS
   # Make weight matrix with Deboeck’s functions
   weight <- ContrastsGOLD(occasions_num, length(occasions_num) - 1)
   weightList <- as.list(as.data.frame(t(weight)))
-
-  # Make weight matrix without Deboeck’s functions
-  #weight <- matrix(c(1/3, 1/3, 1/3,
-  #                   -1,   0, 1 ,
-  #                   1/2,  -1, 1/2),
-  #                 nrow=3, ncol=3)
-  #weightList <- as.list(as.data.frame(t(solve(weight))))
 
   do.call('mxModel', c(list(
     modelName, mxd, type="RAM",
