@@ -4,7 +4,7 @@ Title: Measurement Model of Derivatives (MMOD) in OpenMx
 Version: 1.0.0
 Authors@R: c(
     person(
-      given = 'Kyle',
+      given = 'Kyle D.',
       family = 'Husmann',
       role = c('aut', 'cre'),
       email = 'kdh38@psu.edu'
@@ -13,6 +13,11 @@ Authors@R: c(
            family = 'Brick',
            role = c('aut'),
            email = 'tbrick@psu.edu'
+    ),
+    person(given = 'Ryne',
+           family = 'Estabrook',
+           role = c('aut'),
+           email = 'cestabr2@uic.edu'
     )
   )
 Description: This package provides a convenient interface for building
