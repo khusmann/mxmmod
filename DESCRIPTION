@@ -1,7 +1,7 @@
 Package: mxmmod
 Type: Package
-Title: Measurement Model of Derivatives (MMOD) in OpenMx
-Version: 1.0.0
+Title: Measurement Model of Derivatives in 'OpenMx'
+Version: 1.0.1
 Authors@R: c(
     person(
       given = 'Kyle D.',
@@ -20,13 +20,14 @@ Authors@R: c(
            email = 'cestabr2@uic.edu'
     )
   )
-Description: This package provides a convenient interface for building
-    Measurement Model of Derivatives (MMOD; Estabrook, 2015) in OpenMx.
-License: file LICENSE
+Description: Provides a convenient interface in 'OpenMx' for building
+    Estabrook's (2015) <doi:10.1037/a0034523> Measurement Model of
+    Derivatives (MMOD).
+License: Apache License 2.0
 Encoding: UTF-8
 LazyData: true
 Imports:
-  OpenMx
+    OpenMx
 Suggests: 
     knitr,
     rmarkdown,
