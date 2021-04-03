@@ -95,7 +95,7 @@ mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
   #     d3anxious = c('anxious_1', 'anxious_2', 'anxious_3')
   #   )
   derivStruct <- lapply(occasions, function(o) {
-    measures_flat <- unlist(structure, use.names=F)
+    measures_flat <- unique(unlist(structure, use.names=F))
     tmp <- lapply(measures_flat, function(m) {
       sapply(occasions, function(oo) {itemName(oo, m)})
     })
@@ -104,10 +104,10 @@ mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
   })
 
   factors <- names(factorStruct)
-  derivatives <- unlist(factorStruct, use.names=F)
+  derivatives <- unique(unlist(factorStruct, use.names=F))
   manifests <- unique(unlist(derivStruct))
 
-  data <- data[c(idvar, timevar, unlist(structure))]
+  data <- data[c(idvar, timevar, unique(unlist(structure)))]
   data <- stats::reshape(as.data.frame(data), timevar=timevar, idvar=idvar, direction='wide', sep='_')[-1]
   stopifnot(setequal(manifests, names(data))) # Sanity check
 
