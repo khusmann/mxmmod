@@ -8,6 +8,8 @@
 #' @param idvar name of column for subject IDs
 #' @param timevar name of column for measurement occasion
 #' @param structure factor structure, see 'Details'
+#' @param orthogonal if true, fix correlations between factors to 0
+#'                   (correlations within factor derivatives are still estimated)
 #' @param fiml if true, use raw data to fit model with FIML. Otherwise, fit using cov matrix
 #'             (dropping missing values if necessary).
 #' @return an MMOD as an mxModel object
@@ -36,7 +38,7 @@
 #' summary(mmod_fit)
 #' @export
 
-mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
+mxMmodModel <- function(data, modelName, idvar, timevar, structure, orthogonal=F, fiml=F) {
   derivName <- function(o, m) {paste0('d', m, '_', o)} # derivName(1, 'nervous') -> dnervous_1
   itemName <- function(o, m) {paste0(m, '_', o)} # itemName(1, 'nervous') -> nervous_1
   factorName <- function(o, f) {paste0(f, '_', o)} # factorName(1, 'F') -> F_1
@@ -140,7 +142,13 @@ mxMmodModel <- function(data, modelName, idvar, timevar, structure, fiml=F) {
     # factor variances
     OpenMx::mxPath(from=factors, arrows=2, values=1, free=F),
     # factor correlations
-    OpenMx::mxPath(from=factors, arrows=2, connect="unique.bivariate", free=T),
+    if (orthogonal) {
+      lapply(names(structure), function(f) {
+        OpenMx::mxPath(from=factorName(occasions, f), arrows=2, connect='unique.bivariate', free=T)
+      })
+    } else {
+      OpenMx::mxPath(from=factors, arrows=2, connect="unique.bivariate", free=T)
+    },
     # residual variances(only for latent derivatives !)
     OpenMx::mxPath(from=derivatives, arrows=2, values=1)),
     # transformation

@@ -1,8 +1,16 @@
 context('Reference implementation comparison')
 
-nlsy97_1983_cohort <- function() {
+nlsy97_1983_cohort <- function(omit.na=T) {
   data(nlsy97depression)
-  nlsy97depression[nlsy97depression$birth_y==1983,c('pid', 'occasion', 'nervous', 'calm', 'down', 'happy', 'depressed')]
+  df <- nlsy97depression[nlsy97depression$birth_y==1983,c('pid', 'occasion', 'nervous', 'calm', 'down', 'happy', 'depressed')]
+  if (omit.na) {
+    df_wide <- na.omit(reshape(df, timevar='occasion', idvar='pid', direction='wide',
+                               v.names=c('nervous', 'calm', 'down', 'happy', 'depressed')))
+    expect_equal(nrow(df_wide), 1397)
+    reshape(df_wide)
+  } else {
+    df
+  }
 }
 
 mxmmod_ref <- function(df, do_fiml=F) {
@@ -131,11 +139,16 @@ test_that('Floating point occasions', {
 })
 
 test_that('FIML', {
-  df <- na.omit(nlsy97_1983_cohort())
+  df <- na.omit(nlsy97_1983_cohort(omit.na=F))
   a <- mxmmod_ref(df, do_fiml=T)
   b <- estabrook_ref(df)
   expect_equal(a$parameters$Estimate[1:33], b$parameters$Estimate, tolerance = .05)
   expect_equal(a$parameters$Std.Error[1:33], b$parameters$Std.Error, tolerance = .01)
+})
+
+test_that('Omit missing values warning', {
+  df <- na.omit(nlsy97_1983_cohort(omit.na=F))
+  expect_warning(mxmmod_ref(df, do_fiml=F), regexp="Missing values")
 })
 
 test_that('Argument check timevar numeric', {
