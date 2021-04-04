@@ -9,7 +9,7 @@
 #' @param timevar name of column for measurement occasion
 #' @param structure factor structure, see 'Details'
 #' @param orthogonal if true, fix correlations between factors to 0
-#'                   (correlations within factor derivatives are still estimated)
+#'                   (A factor and its derivatives will still intercorrelate)
 #' @param fiml if true, use raw data to fit model with FIML. Otherwise, fit using cov matrix
 #'             (dropping missing values if necessary).
 #' @return an MMOD as an mxModel object
