@@ -25,21 +25,21 @@ mock_data <- reshape(
     occ6 = rnorm(10)
   ), varying=paste0("occ", 1:6), v.names="occ", direction="long")
 
+lapply_rbind <- function(x, f) {
+  Reduce(rbind, lapply(x, f))
+}
+
 time_delay_mapping <- function(ids, times, n_embed) {
   n <- length(times) - n_embed + 1
-  Reduce(rbind,
-    lapply(ids, function(curr_id) {
-      Reduce(rbind,
-        lapply(1:n, function(curr_n) {
-          data.frame(time_embed = 1:n_embed,
-                     embed_n = curr_n,
-                     time = times[seq(curr_n, length.out = n_embed)],
-                     id = curr_id
-          )
-        })
+  lapply_rbind(ids, function(curr_id) {
+    lapply_rbind(1:n, function(curr_n) {
+      data.frame(time_embed = 1:n_embed,
+                 embed_n = curr_n,
+                 time = times[seq(curr_n, length.out = n_embed)],
+                 id = curr_id
       )
     })
-  )
+  })
 }
 
 time_delay_ref <- function(data, idvar, timevar, n_embed) {
