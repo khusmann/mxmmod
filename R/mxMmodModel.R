@@ -10,6 +10,7 @@
 #' @param structure factor structure, see 'Details'
 #' @param orthogonal if true, fix correlations between factors to 0
 #'                   (A factor and its derivatives will still intercorrelate)
+#' @param embed_dim time delay embedding dimension
 #' @param fiml if true, use raw data to fit model with FIML. Otherwise, fit using cov matrix
 #'             (dropping missing values if necessary).
 #' @return an MMOD as an mxModel object
@@ -38,7 +39,13 @@
 #' summary(mmod_fit)
 #' @export
 
-mxMmodModel <- function(data, modelName, idvar, timevar, structure, orthogonal=F, fiml=F) {
+mxMmodModel <- function(data, modelName, idvar, timevar, structure, orthogonal=F, embed_dim=NULL, fiml=F) {
+  if (!is.null(embed_dim)) {
+    data <- time_delay_embed(data, idvar, timevar, embed_dim)
+    idvar <- paste0(idvar, "_embed")
+    timevar <- paste0(timevar, "_embed")
+  }
+
   derivName <- function(o, m) {paste0('d', m, '_', o)} # derivName(1, 'nervous') -> dnervous_1
   itemName <- function(o, m) {paste0(m, '_', o)} # itemName(1, 'nervous') -> nervous_1
   factorName <- function(o, f) {paste0(f, '_', o)} # factorName(1, 'F') -> F_1
@@ -181,4 +188,32 @@ ContrastsGOLD <- function(T, max) {
     }
   }
   return(Xi[1:(max+1),])
+}
+
+#' Generate Time Delay Embeddings
+#'
+#' @param data a data frame with measurements in long format
+#' @param idvar name of column for subject IDs
+#' @param timevar name of column for measurement occasion
+#' @param n_embed embedding dimension
+#'
+#' @keywords internal
+time_delay_embed <- function(data, idvar, timevar, n_embed) {
+  unique_occasions <- sort(unique(data[[timevar]]))
+  unique_ids <- unique(data[[idvar]])
+
+  n_copies <- length(unique_occasions) - n_embed + 1
+
+  embedings <- unlist(lapply(1:n_copies, function (i) unique_occasions[i:(i+n_embed-1)]))
+
+  embed_map <- data.frame(
+    idvar = rep(unique_ids, each=length(embedings)),
+    timevar = rep(embedings, length(unique_ids)),
+    embedvar = rep(rep(1:n_embed, n_copies), length(unique_ids))
+  )
+  names(embed_map) <- c(idvar, timevar, paste0(timevar, "_embed"))
+  embed_map[paste0(idvar, "_embed")] <-
+    paste0(embed_map[[idvar]], "_", rep(rep(1:n_copies, each=n_embed), length(unique_ids)))
+
+  merge(data, embed_map)
 }
