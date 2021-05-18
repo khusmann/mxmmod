@@ -1,7 +1,7 @@
 Package: mxmmod
 Type: Package
 Title: Measurement Model of Derivatives in 'OpenMx'
-Version: 1.0.1
+Version: 1.1.0
 Authors@R: c(
     person(
       given = 'Kyle D.',
@@ -34,5 +34,5 @@ Suggests:
     testthat,
     tidyverse
 VignetteBuilder: knitr
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
 Depends: R (>= 2.10)

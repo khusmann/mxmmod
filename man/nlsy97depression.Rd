@@ -4,7 +4,8 @@
 \name{nlsy97depression}
 \alias{nlsy97depression}
 \title{NLSY97 Longitudinal Depression Scale Data}
-\format{A data frame with 26952 rows and 7 variables:
+\format{
+A data frame with 26952 rows and 7 variables:
 \describe{
   \item{pid}{Unique ID of participant}
   \item{sex}{Sex of participant}
@@ -16,7 +17,8 @@
   \item{down}{How often participant felt 'down or blue'}
   \item{happy}{How often participant felt 'like a happy person'}
   \item{depressed}{How often participant felt 'depressed'}
-}}
+}
+}
 \source{
 \url{https://www.bls.gov/nls/nlsy97.htm}
 }

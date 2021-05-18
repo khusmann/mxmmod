@@ -4,7 +4,16 @@
 \alias{mxMmodModel}
 \title{Create an MMOD}
 \usage{
-mxMmodModel(data, modelName, idvar, timevar, structure, fiml = F)
+mxMmodModel(
+  data,
+  modelName,
+  idvar,
+  timevar,
+  structure,
+  orthogonal = F,
+  embed_dim = NULL,
+  fiml = F
+)
 }
 \arguments{
 \item{data}{a data frame with measurements in long format}
@@ -16,6 +25,11 @@ mxMmodModel(data, modelName, idvar, timevar, structure, fiml = F)
 \item{timevar}{name of column for measurement occasion}
 
 \item{structure}{factor structure, see 'Details'}
+
+\item{orthogonal}{if true, fix correlations between factors to 0
+(A factor and its derivatives will still intercorrelate)}
+
+\item{embed_dim}{time delay embedding dimension}
 
 \item{fiml}{if true, use raw data to fit model with FIML. Otherwise, fit using cov matrix
 (dropping missing values if necessary).}
